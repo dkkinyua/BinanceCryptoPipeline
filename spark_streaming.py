@@ -150,7 +150,7 @@ def process_schema(table, topic, schema):
         col("data.transaction").cast("string").alias("transaction")
     )
 
-    def write_to_cassandra(df, batch_id):
+    def write_to_cassandra(df):
         df.write \
           .format("org.apache.spark.sql.cassandra") \
           .mode("append") \
