@@ -9,7 +9,11 @@ load_dotenv()
 
 spark = SparkSession.builder \
     .appName("BinancetoCassandraDataPipeline") \
-    .config("spark.cassandra.connection.host", "20.38.45.22") \
+    .config("spark.cassandra.connection.host", os.getenv("CASSANDRA_ADDRESS")) \
+    .config("spark.cassandra.auth.username", os.getenv("CASSANDRA_USER")) \
+    .config("spark.cassandra.auth.password", os.getenv("CASSANDRA_PWD")) \
+    .config("spark.cassandra.connection.timeout_ms", "30000") \
+    .config("spark.cassandra.read.timeout_ms", "60000") \
     .config("spark.jars.packages",
             "org.apache.spark:spark-sql-kafka-0-10_2.13:3.5.1,"
             "com.datastax.spark:spark-cassandra-connector_2.13:3.5.0") \
@@ -150,7 +154,7 @@ def process_schema(table, topic, schema):
         col("data.transaction").cast("string").alias("transaction")
     )
 
-    def write_to_cassandra(df):
+    def write_to_cassandra(df, batch_id):
         df.write \
           .format("org.apache.spark.sql.cassandra") \
           .mode("append") \
